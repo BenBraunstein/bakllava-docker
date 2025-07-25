@@ -1,14 +1,16 @@
 # Use NVIDIA CUDA runtime as base image for GPU support
 FROM nvidia/cuda:12.9.1-runtime-ubuntu22.04
 
-# Set environment variables
+# Set environment variables to forcefully bypass CUDA version checks
 ENV DEBIAN_FRONTEND=noninteractive
 ENV OLLAMA_HOST=0.0.0.0
 ENV OLLAMA_PORT=11434
-# Bypass CUDA driver version checks for compatibility
+# Strong NVIDIA runtime overrides to bypass version checking
 ENV NVIDIA_DISABLE_REQUIRE=1
 ENV NVIDIA_VISIBLE_DEVICES=all
 ENV NVIDIA_DRIVER_CAPABILITIES=compute,utility
+ENV CUDA_COMPAT_DISABLE=1
+ENV NVIDIA_REQUIRE_CUDA="cuda>=11.0"
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
