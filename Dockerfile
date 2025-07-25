@@ -1,5 +1,5 @@
 # Use NVIDIA CUDA runtime as base image for GPU support
-FROM nvidia/cuda:12.1-runtime-ubuntu22.04
+FROM nvidia/cuda:12.9.1-runtime-ubuntu22.04
 
 # Set environment variables
 ENV DEBIAN_FRONTEND=noninteractive
@@ -14,7 +14,6 @@ RUN apt-get update && apt-get install -y \
     python3-dev \
     build-essential \
     wget \
-    ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Ollama
@@ -39,8 +38,8 @@ RUN mkdir -p /root/.ollama
 EXPOSE 11434 8000
 
 # Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-    CMD curl -f http://localhost:11434/api/tags || exit 1
+HEALTHCHECK --interval=30s --timeout=10s --start-period=120s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
 
 # Start script that launches both Ollama and the API server
 CMD ["./startup.sh"] 
