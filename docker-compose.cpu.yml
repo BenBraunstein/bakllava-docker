@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  bakllava:
+    build:
+      context: .
+      dockerfile: Dockerfile.cpu
+    container_name: bakllava-api-cpu
+    restart: unless-stopped
+    ports:
+      - "8000:8000" # FastAPI server
+      - "11434:11434" # Ollama API
+    volumes:
+      - ollama_data_cpu:/root/.ollama
+      - ./logs:/app/logs
+    environment:
+      - OLLAMA_HOST=0.0.0.0
+      - OLLAMA_PORT=11434
+      # No GPU-specific environment variables
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8000/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 180s # Longer start period for CPU mode
+
+volumes:
+  ollama_data_cpu:
+    driver: local

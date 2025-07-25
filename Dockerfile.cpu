@@ -1,0 +1,58 @@
+# CPU-only Dockerfile (no NVIDIA CUDA required)
+FROM ubuntu:22.04
+
+# Set environment variables
+ENV DEBIAN_FRONTEND=noninteractive
+ENV OLLAMA_HOST=0.0.0.0
+ENV OLLAMA_PORT=11434
+ENV PATH="/usr/local/bin:/usr/bin:/bin:$PATH"
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
+    ca-certificates \
+    python3 \
+    python3-pip \
+    python3-dev \
+    build-essential \
+    wget \
+    gnupg \
+    lsb-release \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Ollama from GitHub releases (ARM64 for Apple Silicon)
+RUN ARCH=$(uname -m) && \
+    if [ "$ARCH" = "aarch64" ] || [ "$ARCH" = "arm64" ]; then \
+    OLLAMA_ARCH="arm64"; \
+    else \
+    OLLAMA_ARCH="amd64"; \
+    fi && \
+    echo "Downloading Ollama for architecture: $OLLAMA_ARCH" && \
+    curl -L https://github.com/ollama/ollama/releases/download/v0.1.47/ollama-linux-${OLLAMA_ARCH} -o /usr/local/bin/ollama && \
+    chmod +x /usr/local/bin/ollama && \
+    ls -la /usr/local/bin/ollama
+
+# Create app directory
+WORKDIR /app
+
+# Copy Python requirements and install dependencies
+COPY requirements.txt .
+RUN pip3 install --no-cache-dir -r requirements.txt
+
+# Copy application files
+COPY api_server.py .
+COPY startup.sh .
+RUN chmod +x startup.sh
+
+# Create directory for model storage
+RUN mkdir -p /root/.ollama
+
+# Expose ports
+EXPOSE 11434 8000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost:11434/api/tags || exit 1
+
+# Start script that launches both Ollama and the API server
+CMD ["./startup.sh"] 

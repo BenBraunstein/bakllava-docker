@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  bakllava:
+    build: .
+    container_name: bakllava-api
+    restart: unless-stopped
+    runtime: nvidia # Explicit NVIDIA runtime for Unraid compatibility
+    ports:
+      - "8000:8000" # FastAPI server
+      - "11434:11434" # Ollama API
+    volumes:
+      - ollama_data:/root/.ollama
+      - ./logs:/app/logs
+    environment:
+      - OLLAMA_HOST=0.0.0.0
+      - OLLAMA_PORT=11434
+      - CUDA_VISIBLE_DEVICES=all
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [ gpu ]
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8000/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 120s
+
+volumes:
+  ollama_data:
+    driver: local

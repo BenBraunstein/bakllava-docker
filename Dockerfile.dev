@@ -1,0 +1,42 @@
+# Development Dockerfile with original BakLLaVA code
+FROM nvidia/cuda:12.1-devel-ubuntu22.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
+    git \
+    python3 \
+    python3-pip \
+    python3-dev \
+    build-essential \
+    wget \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Ollama (for comparison/fallback)
+RUN curl -fsSL https://ollama.com/install.sh | sh
+
+# Clone and install BakLLaVA from source
+WORKDIR /app
+RUN git clone https://github.com/haotian-liu/BakLLaVA.git bakllava-source
+WORKDIR /app/bakllava-source
+
+# Install BakLLaVA dependencies
+RUN pip3 install --upgrade pip
+RUN pip3 install -e .
+
+# Install additional dependencies for our API
+COPY requirements.txt /app/
+RUN pip3 install -r /app/requirements.txt
+
+# Copy our API server
+COPY api_server_dev.py /app/
+COPY startup_dev.sh /app/
+RUN chmod +x /app/startup_dev.sh
+
+WORKDIR /app
+EXPOSE 8000 11434
+
+CMD ["./startup_dev.sh"] 
