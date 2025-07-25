@@ -1,16 +1,22 @@
-# Use PyTorch base image with CUDA support (more compatible)
-FROM pytorch/pytorch:2.1.0-cuda12.1-cudnn8-runtime
+# Use NVIDIA CUDA devel image with full toolkit for Ollama GPU support
+FROM nvidia/cuda:12.9.1-devel-ubuntu22.04
 
-# Set environment variables
+# Set environment variables to bypass version checking
 ENV DEBIAN_FRONTEND=noninteractive
 ENV OLLAMA_HOST=0.0.0.0
 ENV OLLAMA_PORT=11434
+# NVIDIA runtime configuration with version bypass
 ENV NVIDIA_VISIBLE_DEVICES=all
 ENV NVIDIA_DRIVER_CAPABILITIES=compute,utility
+ENV CUDA_VISIBLE_DEVICES=all
+ENV NVIDIA_DISABLE_REQUIRE=1
+ENV NVIDIA_REQUIRE_CUDA="cuda>=11.0"
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
     curl \
+    python3 \
+    python3-pip \
     python3-dev \
     build-essential \
     wget \
