@@ -1,10 +1,14 @@
 # Use NVIDIA CUDA runtime as base image for GPU support
-FROM nvidia/cuda:11.8-runtime-ubuntu20.04
+FROM nvidia/cuda:12.9.1-runtime-ubuntu22.04
 
 # Set environment variables
 ENV DEBIAN_FRONTEND=noninteractive
 ENV OLLAMA_HOST=0.0.0.0
 ENV OLLAMA_PORT=11434
+# Bypass CUDA driver version checks for compatibility
+ENV NVIDIA_DISABLE_REQUIRE=1
+ENV NVIDIA_VISIBLE_DEVICES=all
+ENV NVIDIA_DRIVER_CAPABILITIES=compute,utility
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
