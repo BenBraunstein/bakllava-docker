@@ -1,5 +1,5 @@
 # Use NVIDIA CUDA runtime as base image for GPU support
-FROM nvidia/cuda:11.8-runtime-ubuntu22.04
+FROM nvidia/cuda:11.8-runtime-ubuntu20.04
 
 # Set environment variables
 ENV DEBIAN_FRONTEND=noninteractive
